@@ -31,7 +31,7 @@ const Page = async ({ params }: { params: Promise<{ id: string }> }) => {
           address private: anyone with it can read your feeds.
         </p>
         <p className="links">
-          <a href="https://github.com/capJavert/daily-rss-app">Source on GitHub</a>
+          <a href="https://github.com/dailydotdev/daily-rss-app">Source on GitHub</a>
           <a href="https://docs.daily.dev/public-api/">daily.dev API docs</a>
         </p>
       </header>
