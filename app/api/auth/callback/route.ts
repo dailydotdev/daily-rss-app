@@ -11,7 +11,7 @@ import {
   saveFeed,
   type FeedRecord,
 } from '@/lib/store';
-import { applyTokens, revokeFeedTokens } from '@/lib/tokens';
+import { applyTokens } from '@/lib/tokens';
 
 export const dynamic = 'force-dynamic';
 
@@ -71,9 +71,6 @@ export const GET = async (request: NextRequest): Promise<NextResponse> => {
       reconnectFeed?.userId === profile.id
         ? reconnectFeed
         : await getFeedForUser(profile.id);
-    if (existing) {
-      await revokeFeedTokens(existing);
-    }
     const base: FeedRecord = existing
       ? existing
       : {

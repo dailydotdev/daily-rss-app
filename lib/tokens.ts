@@ -29,7 +29,7 @@ export const applyTokens = (
 });
 
 export const revokeFeedTokens = async (record: FeedRecord): Promise<void> => {
-  if (record.refreshToken) {
+  if (record.refreshToken && !record.needsReconnect) {
     await revokeRefreshToken(decrypt(record.refreshToken));
   }
 };
