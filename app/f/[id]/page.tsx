@@ -99,7 +99,7 @@ const Page = async ({ params }: { params: Promise<{ id: string }> }) => {
           API → Connected apps.
         </p>
         <form action={`/f/${id}/delete`} method="post" className="actions">
-          <button type="submit">Delete these feeds</button>
+          <button type="submit" className="danger">Delete these feeds</button>
         </form>
       </div>
     </main>
