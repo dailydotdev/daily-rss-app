@@ -7,7 +7,7 @@
     "build": "vite build",
     "start": "vite preview --port 3006",
     "deploy": "vinext-cloudflare deploy",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "cf workers types && tsc --noEmit"
   },
   "dependencies": {
     "@vinext/cloudflare": "^1.0.1",
