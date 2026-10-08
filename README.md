@@ -1,6 +1,6 @@
 # daily.dev RSS
 
-Your personalized daily.dev feed, popular posts, most discussed posts and your bookmarks as private RSS 2.0 and JSON Feed URLs for any reader. People sign in with daily.dev, approve read-only access, and get a private page with their feed URLs. No API token to copy.
+Your personalized daily.dev feed as private RSS 2.0 and JSON Feed URLs for any reader. People sign in with daily.dev, approve read-only access, and get a private page with their feed URLs. No API token to copy.
 
 Built on the [daily.dev public API](https://docs.daily.dev/public-api/) with [Sign in with daily.dev](https://docs.daily.dev/oauth-apps/). Next.js App Router running on [vinext](https://github.com/cloudflare/vinext), deployed to Cloudflare Workers, with tokens and rendered feeds in Workers KV.
 
@@ -9,7 +9,7 @@ Built on the [daily.dev public API](https://docs.daily.dev/public-api/) with [Si
 1. `GET /api/auth/login` starts the OAuth 2.1 flow (authorization code + PKCE, confidential client, scopes `openid profile offline_access read`).
 2. `GET /api/auth/callback` exchanges the code, fetches `/public/v1/profile`, creates an unguessable feed id and stores the tokens, encrypted with AES-256-GCM, in KV.
 3. `GET /f/<id>` is the private page with feed URLs and a delete button.
-4. `GET /f/<id>/<source>.<xml|json>` renders the feed. `source` is `foryou`, `popular`, `discussed` or `bookmarks`.
+4. `GET /f/<id>/<source>.<xml|json>` renders the feed. Only `foryou` is enabled. `popular`, `discussed` and `bookmarks` are implemented too; add them to `ENABLED_FEED_SOURCES` in `lib/feeds.ts` to offer them. Enabling more than one makes concurrent token refreshes likely, see the security notes.
 
 Feeds are rendered from a KV cache that lives `FEED_CACHE_SECONDS` (8 hours by default). Reader polling never reaches daily.dev more often than that, so one feed costs about 90 API requests a month, inside the free quota of 200 requests per 30 days. A lock prevents two concurrent polls from refreshing the token twice (refresh tokens rotate on every use).
 
@@ -44,7 +44,7 @@ The dev server runs the app inside workerd, the Workers runtime, with a local KV
 
 - The client secret and the encryption key never leave the server.
 - Access and refresh tokens are encrypted at rest. Rotating `TOKEN_ENCRYPTION_KEY` invalidates every stored feed; people reconnect from their feed page.
-- The refresh lock is best effort: KV has no atomic set-if-absent, so two polls landing in the same second can still both refresh. The loser's feed shows the reconnect item until the next sign-in.
+- The refresh lock is best effort: KV has no atomic set-if-absent, so two refreshes landing in the same second can both go through. daily.dev then treats the reused refresh token as stolen and revokes all of the person's tokens for the app, so the feed shows the reconnect item until they sign in again. With one feed per person this needs the same feed polled twice at once, for example from two readers.
 - Feed URLs are bearer secrets. Responses are `Cache-Control: private` and `X-Robots-Tag: noindex`.
 - Only the `read` scope is requested; the app can't change anything on a daily.dev account.
 - People can revoke access from daily.dev → Settings → API → Connected apps, or delete their feeds from the feed page, which removes the stored tokens immediately.

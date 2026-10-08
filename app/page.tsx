@@ -13,10 +13,9 @@ const Page = async ({
       <header>
         <h1>daily.dev RSS</h1>
         <p className="muted">
-          Your personalized daily.dev feed, popular posts, most discussed and
-          your bookmarks as private RSS and JSON feeds for Reeder, NetNewsWire,
-          Folo, Feedly or any other reader. Sign in with daily.dev, copy a URL,
-          done.
+          Your personalized daily.dev feed as a private RSS or JSON feed for
+          Reeder, NetNewsWire, Folo, Feedly or any other reader. Sign in with
+          daily.dev, copy the URL, done.
         </p>
         <p className="links">
           <a href="https://github.com/dailydotdev/daily-rss-app">Source on GitHub</a>
@@ -39,9 +38,8 @@ const Page = async ({
             to copy, and nothing is ever written to your account.
           </li>
           <li>
-            You get a private page with feed URLs for your For You feed,
-            popular posts, most discussed posts and your bookmarks, in RSS 2.0
-            and JSON Feed.
+            You get a private page with the URL of your personalized For You
+            feed, in RSS 2.0 and JSON Feed.
           </li>
           <li>
             Each item links to the original article and to the discussion on

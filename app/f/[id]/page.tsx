@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation';
 import { getConfig } from '@/lib/config';
-import { FEED_SOURCES, feedMeta } from '@/lib/feeds';
+import { ENABLED_FEED_SOURCES, feedMeta } from '@/lib/feeds';
 import { getFeed } from '@/lib/store';
 
 export const dynamic = 'force-dynamic';
@@ -55,7 +55,7 @@ const Page = async ({ params }: { params: Promise<{ id: string }> }) => {
             </tr>
           </thead>
           <tbody>
-            {FEED_SOURCES.map((source) => (
+            {ENABLED_FEED_SOURCES.map((source) => (
               <tr key={source}>
                 <td>
                   <strong>{feedMeta[source].title}</strong>
@@ -79,10 +79,10 @@ const Page = async ({ params }: { params: Promise<{ id: string }> }) => {
           Each feed asks daily.dev for new posts at most every{' '}
           {formatHours(config.cacheSeconds)}, about {refreshesPerDay} times a
           day, no matter how often your reader polls. That keeps a feed inside
-          the free daily.dev API quota of 200 requests per 30 days. Every feed
-          you subscribe to uses its own share, so on a free account stick to
-          one or two. <a href="https://daily.dev/plus">Plus</a> removes the
-          monthly quota.
+          the free daily.dev API quota of 200 requests per 30 days. Subscribe
+          to one format, RSS or JSON, since each uses its own share of the
+          quota. <a href="https://daily.dev/plus">Plus</a> removes the monthly
+          quota.
         </p>
         <p className="muted">
           If no reader fetches your feeds for a couple of days, the daily.dev

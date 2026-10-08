@@ -7,6 +7,8 @@ export const FEED_SOURCES = [
 
 export type FeedSource = (typeof FEED_SOURCES)[number];
 
+export const ENABLED_FEED_SOURCES: readonly FeedSource[] = ['foryou'];
+
 export const FEED_FORMATS = ['xml', 'json'] as const;
 
 export type FeedFormat = (typeof FEED_FORMATS)[number];
@@ -49,7 +51,7 @@ export const parseFeedParam = (
     return null;
   }
   const [, source, format] = match;
-  if (!FEED_SOURCES.includes(source as FeedSource)) {
+  if (!ENABLED_FEED_SOURCES.includes(source as FeedSource)) {
     return null;
   }
   return { source: source as FeedSource, format: format as FeedFormat };
