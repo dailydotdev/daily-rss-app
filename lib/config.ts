@@ -32,6 +32,7 @@ export const getConfig = () => {
     redirectUri: `${appUrl}/api/auth/callback`,
     authorizeUrl: `${apiUrl}/auth/oauth2/authorize`,
     tokenUrl: `${apiUrl}/auth/oauth2/token`,
+    revokeUrl: `${apiUrl}/auth/oauth2/revoke`,
     encryptionKey: required('TOKEN_ENCRYPTION_KEY'),
     cacheSeconds: Number(process.env.FEED_CACHE_SECONDS ?? 28800),
     feedItems: Math.min(Math.max(Number(process.env.FEED_ITEMS ?? 30), 1), 50),

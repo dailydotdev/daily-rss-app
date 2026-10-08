@@ -1,5 +1,10 @@
 import { decrypt, encrypt } from './crypto';
-import { requestToken, TokenRequestError, type TokenResponse } from './oauth';
+import {
+  requestToken,
+  revokeRefreshToken,
+  TokenRequestError,
+  type TokenResponse,
+} from './oauth';
 import { saveFeed, type FeedRecord } from './store';
 
 export class ReconnectRequiredError extends Error {
@@ -22,6 +27,12 @@ export const applyTokens = (
   expiresAt: Date.now() + (tokens.expires_in ?? 900) * 1000,
   needsReconnect: false,
 });
+
+export const revokeFeedTokens = async (record: FeedRecord): Promise<void> => {
+  if (record.refreshToken) {
+    await revokeRefreshToken(decrypt(record.refreshToken));
+  }
+};
 
 export const getValidAccessToken = async (
   record: FeedRecord,

@@ -80,12 +80,17 @@ export const GET = async (
       await setCachedFeed(id, source, format, body, RECONNECT_CACHE_SECONDS);
       return feedResponse(body, contentType, RECONNECT_CACHE_SECONDS);
     }
-    const retryAfter =
-      err instanceof DailyApiError && err.status === 429 ? '3600' : '600';
-    return new NextResponse((err as Error).message, {
-      status: 503,
-      headers: { 'Retry-After': retryAfter },
-    });
+    console.error('Feed refresh failed', err);
+    const rateLimited = err instanceof DailyApiError && err.status === 429;
+    return new NextResponse(
+      rateLimited
+        ? 'The daily.dev API quota for this feed is used up, try again later'
+        : 'daily.dev is unavailable right now, try again later',
+      {
+        status: 503,
+        headers: { 'Retry-After': rateLimited ? '3600' : '600' },
+      },
+    );
   } finally {
     await releaseLock(id);
   }

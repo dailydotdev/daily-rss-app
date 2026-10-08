@@ -1,9 +1,12 @@
+import { errorMessage } from '@/lib/errors';
+
 const Page = async ({
   searchParams,
 }: {
   searchParams: Promise<Record<string, string | undefined>>;
 }) => {
   const { error, deleted } = await searchParams;
+  const errorText = errorMessage(error);
 
   return (
     <main>
@@ -21,7 +24,7 @@ const Page = async ({
         </p>
       </header>
 
-      {error && <div className="error">{error}</div>}
+      {errorText && <div className="error">{errorText}</div>}
       {deleted && <div className="success">Your feeds were deleted.</div>}
 
       <a className="signin" href="/api/auth/login">

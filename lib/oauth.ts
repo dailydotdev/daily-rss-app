@@ -61,6 +61,28 @@ export const requestToken = async (
   return body as TokenResponse;
 };
 
+export const revokeRefreshToken = async (token: string): Promise<void> => {
+  const config = getConfig();
+  try {
+    const res = await fetch(config.revokeUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        client_id: config.clientId,
+        client_secret: config.clientSecret,
+        token,
+        token_type_hint: 'refresh_token',
+      }),
+      cache: 'no-store',
+    });
+    if (!res.ok) {
+      console.error('Token revocation failed', res.status, await res.text());
+    }
+  } catch (err) {
+    console.error('Token revocation failed', err);
+  }
+};
+
 export const setTempCookie = (
   response: NextResponse,
   name: string,

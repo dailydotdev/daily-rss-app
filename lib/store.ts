@@ -47,6 +47,7 @@ const feedKey = (id: string): string => `feed:${id}`;
 const cacheKey = (id: string, source: FeedSource, format: string): string =>
   `cache:${id}:${source}:${format}`;
 const lockKey = (id: string): string => `lock:${id}`;
+const userKey = (userId: string): string => `user:${userId}`;
 
 export const getFeed = (id: string): Promise<FeedRecord | null> =>
   get<FeedRecord>(feedKey(id));
@@ -55,8 +56,20 @@ export const saveFeed = async (record: FeedRecord): Promise<void> => {
   await set(feedKey(record.id), record);
 };
 
-export const deleteFeed = async (id: string): Promise<void> => {
-  const keys = [feedKey(id), lockKey(id)];
+export const linkFeedToUser = async (record: FeedRecord): Promise<void> => {
+  await set(userKey(record.userId), record.id);
+};
+
+export const getFeedForUser = async (
+  userId: string,
+): Promise<FeedRecord | null> => {
+  const id = await get<string>(userKey(userId));
+  return id ? getFeed(id) : null;
+};
+
+export const deleteFeed = async (record: FeedRecord): Promise<void> => {
+  const { id } = record;
+  const keys = [feedKey(id), lockKey(id), userKey(record.userId)];
   FEED_SOURCES.forEach((source) => {
     keys.push(cacheKey(id, source, 'xml'), cacheKey(id, source, 'json'));
   });

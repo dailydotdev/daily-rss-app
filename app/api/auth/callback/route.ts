@@ -3,13 +3,20 @@ import { NextResponse } from 'next/server';
 import { cookieNames, getConfig } from '@/lib/config';
 import { getProfile } from '@/lib/daily';
 import { createFeedId, requestToken } from '@/lib/oauth';
-import { getFeed, saveFeed, type FeedRecord } from '@/lib/store';
-import { applyTokens } from '@/lib/tokens';
+import { errorUrl, type ErrorCode } from '@/lib/errors';
+import {
+  getFeed,
+  getFeedForUser,
+  linkFeedToUser,
+  saveFeed,
+  type FeedRecord,
+} from '@/lib/store';
+import { applyTokens, revokeFeedTokens } from '@/lib/tokens';
 
 export const dynamic = 'force-dynamic';
 
-const redirectWithError = (appUrl: string, message: string): NextResponse =>
-  NextResponse.redirect(`${appUrl}/?error=${encodeURIComponent(message)}`);
+const redirectWithError = (appUrl: string, code: ErrorCode): NextResponse =>
+  NextResponse.redirect(errorUrl(appUrl, code));
 
 const clearTempCookies = (response: NextResponse): void => {
   response.cookies.delete(cookieNames.state);
@@ -23,10 +30,14 @@ export const GET = async (request: NextRequest): Promise<NextResponse> => {
   const error = params.get('error');
 
   if (error) {
-    const description = params.get('error_description');
+    console.error(
+      'Authorization failed',
+      error,
+      params.get('error_description'),
+    );
     return redirectWithError(
       config.appUrl,
-      description ? `${error}: ${description}` : error,
+      error === 'access_denied' ? 'access_denied' : 'authorization_failed',
     );
   }
 
@@ -37,7 +48,7 @@ export const GET = async (request: NextRequest): Promise<NextResponse> => {
   const reconnectFeedId = request.cookies.get(cookieNames.reconnectFeed)?.value;
 
   if (!code || !state || state !== expectedState || !verifier) {
-    return redirectWithError(config.appUrl, 'Invalid state or missing code');
+    return redirectWithError(config.appUrl, 'invalid_state');
   }
 
   try {
@@ -49,18 +60,23 @@ export const GET = async (request: NextRequest): Promise<NextResponse> => {
     });
 
     if (!tokens.refresh_token) {
-      return redirectWithError(
-        config.appUrl,
-        'daily.dev did not return a refresh token. Make sure offline_access is allowed.',
-      );
+      return redirectWithError(config.appUrl, 'missing_refresh_token');
     }
 
     const profile = await getProfile(tokens.access_token);
-    const existing = reconnectFeedId ? await getFeed(reconnectFeedId) : null;
-    const base: FeedRecord =
-      existing && existing.userId === profile.id
-        ? existing
-        : {
+    const reconnectFeed = reconnectFeedId
+      ? await getFeed(reconnectFeedId)
+      : null;
+    const existing =
+      reconnectFeed?.userId === profile.id
+        ? reconnectFeed
+        : await getFeedForUser(profile.id);
+    if (existing) {
+      await revokeFeedTokens(existing);
+    }
+    const base: FeedRecord = existing
+      ? existing
+      : {
             id: createFeedId(),
             userId: profile.id,
             username: profile.username ?? profile.id,
@@ -73,11 +89,13 @@ export const GET = async (request: NextRequest): Promise<NextResponse> => {
 
     const record = applyTokens(base, tokens);
     await saveFeed(record);
+    await linkFeedToUser(record);
 
     const response = NextResponse.redirect(`${config.appUrl}/f/${record.id}`);
     clearTempCookies(response);
     return response;
   } catch (err) {
-    return redirectWithError(config.appUrl, (err as Error).message);
+    console.error('Sign-in failed', err);
+    return redirectWithError(config.appUrl, 'token_exchange_failed');
   }
 };
