@@ -5,7 +5,7 @@ const title = 'daily.dev RSS';
 const description =
   'Your personalized daily.dev feed, popular posts and bookmarks as private RSS and JSON feeds for any reader. Sign in with daily.dev, copy a URL, done.';
 const ogImage =
-  'https://media.daily.dev/image/upload/s--VAY5ToZt--/f_auto/v1724209435/public/daily.dev%20-%20open%20graph';
+  'https://media.daily.dev/image/upload/s--OtiV94Io--/f_auto,q_auto/opengraph/open-graph-ai-agents.png';
 
 export const metadata = {
   title,
